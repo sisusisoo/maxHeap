@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <math.h>
 #define MAX_ELEMENT 200
 
 int movCount = 0;
@@ -59,7 +60,7 @@ void insert_heap(HeapType* h, element item) {
 }
 
 
-//삭제함수 
+//삭제함수 --------------------일단 안씀 
 element delete_heap(HeapType* h) {
 	int  parent, child;
 	element item, temp;
@@ -82,30 +83,82 @@ element delete_heap(HeapType* h) {
 	return item;
 }
 
-//
+//입력값 삭제함수 
 element delete_heap_sel(HeapType* h,element item1) {
 int  parent, child;
-element item, temp;
+element item, temp,change;
 item = item1;//삭제할 가장 큰값 나중에 리턴 하려고 
+
+
 temp = h->heap[(h->heap_size)--];//올려줄 말단 값  
-parent = 1;
-child = 2;
+
+int d=0;
+
+//일단 해당 값의 배열 인덱스 찾기
+for (int i = 1; i < h->heap_size + 1; i++) {
+	if (h->heap[i].key == item1.key) {
+		d = i;
+		break;
+	}
+}
+printf("삭제할 값 인덱스:%d\n",d);
+
+
+//해당 배열에 마지막값(배열끝값) 넣기 
+
+//h->heap[d] = temp;// 이게 parent 값이 되면 여기서부터 내려감  젤중요***
+parent = d;
+child = d*2;
+movCount++;//삭제된 값대신 맨 끝값이 들어가는 거 부터 노드 이동 시작 
+
+h->heap[parent] = temp;
+//levelPrint에서 음의 숫자가 되어야 안나오게 했어서 배열의 끝은 heapSize만으로는 부족하다
+h->heap[(h->heap_size)+1].key = -1;
 
 while (child <= h->heap_size) {
+	printHeap(h);
 	if (child <= h->heap_size &&
 		(h->heap[child].key) < h->heap[child + 1].key)//두 자식 중에 큰값을 고르고 그걸 올리려고 
 		child++;
 	if (temp.key >= (h->heap[child].key)) break;
-	h->heap[parent] = h->heap[child];//이러면 자동으로 1번째 값이 삭제되고 다른 값으로 대체됨
+	change = h->heap[parent];
+	h->heap[parent] = h->heap[child];//이러면 자동으로 parent값과 교체  
+	h->heap[child] = change;
 	parent = child;//기준이 바뀜 바로 밑에 줄기로 
 	child *= 2;//해당 트리에 아래줄기로 이동
 	movCount++;
-	printHeap(h);
+	
+
 }
-h->heap[parent] = temp;
+
+h->heap[parent] = temp; //첨부터 넣고 시작해서 필요없음 
 printHeap(h);
 return item;
 }
+
+void levelPrint(HeapType *h) {
+	int parent = 1;
+
+
+	//레벨 갯수 
+	int level = (int)log2(h->heap_size)+1;
+	printf("level: %d\n", level);
+
+	for (int i = 1; i <= level; i++) {
+		printf("[%d]", i);//레벨 출력
+		//printf("%d\n", parent);
+		for (int j = parent; j < parent * 2;j++) {
+			if (h->heap[j].key>0) {// 아직 안무것도 안들어간값은 음의 값이라서 배열에 뭔가 들어간 값은 양의 값이라고 세팅 
+				printf("%d ",h->heap[j]);
+
+			}
+		}
+		printf("\n");
+		parent *= 2;
+	}
+}
+
+
 
 int start(char sel,HeapType* h) {
 	int input;
@@ -134,10 +187,11 @@ int start(char sel,HeapType* h) {
 			printf("%d ", h->heap[i].key);
 		}
 
-		printf("노드 이동 횟수: %d", movCount);
+		printf("\n노드 이동 횟수: %d", movCount);
 
 		break;
 	case 'p':
+		levelPrint(h);
 		break;
 	case 'c':
 		break;
@@ -147,23 +201,31 @@ int start(char sel,HeapType* h) {
 
 void main() {
 	char sel="a";
-	HeapType* mh;
+	HeapType* mh ;
 	mh = create();
 	init(mh);
 	//struct heapType s1 = { {0,90,89,70,36,75,63,65,21,18,15},11 };
 	//mh->heap = {0,90,89,70,36,75,63,65,21,18,15};
 
 	int heap[] = {0,90,89,70,36,75,63,65,21,18,15 };
+
 	element temp;
-	printf("1\n");
-	for (int i = 0; i <11 ; i++) {
-		printf("%d ", heap[i]);
-		temp.key = heap[i];
-		insert_heap(mh, temp);
+
+
+
+	//mh->heap[1].key = heap[1];
+
+	//값을 하나씩 h->heap[]에 넣는다 
+	//mh->heap_size++;
+	for (int i = 1; i <11 ; i++) {
 	
+		mh->heap[i].key = heap[i];
+		mh->heap_size++;
+	//	printf("%d : %d\n", mh->heap[i].key, heap[i]);
+		
 	}
-	printf("\n");
-	printf("2\n");
+
+	printHeap(mh);
 
 
 	while (1) {
